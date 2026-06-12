@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Hire Onboarding Checklist</title>
+<style>
+  :root {
+    --accent: #4f46e5;
+    --accent-soft: #eef0fe;
+    --done: #16a34a;
+    --done-soft: #ecfdf3;
+    --text: #1f2433;
+    --muted: #6b7280;
+    --line: #e5e8f0;
+    --bg: #f3f5f9;
+    --card: #ffffff;
+    --danger: #dc2626;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 28px 16px 64px; }
+
+  /* ---------- Header & progress ---------- */
+  .header {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, .06);
+  }
+  .header h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -.02em; }
+  .header p.subtitle { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+  .progress-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px; font-size: 14px;
+  }
+  .progress-row .pct { font-weight: 700; color: var(--accent); font-size: 18px; }
+  .progress-row .count { color: var(--muted); }
+  .bar {
+    height: 14px; background: #e9ecf4; border-radius: 999px; overflow: hidden;
+  }
+  .bar .fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), #7c6ff0);
+    border-radius: 999px;
+    transition: width .45s ease;
+  }
+  .bar .fill.full { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .header.admin-banner {
+    border: 1.5px solid var(--accent);
+  }
+  .admin-note {
+    margin-top: 14px; padding: 10px 14px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 13.5px; font-weight: 600;
+  }
+  .admin-note.dirty { background: #fef3cd; color: #92600a; }
+
+  /* ---------- Admin toolbar ---------- */
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px;
+  }
+  .btn {
+    appearance: none; border: 1px solid var(--line); background: var(--card);
+    color: var(--text); padding: 9px 14px; border-radius: 8px;
+    font-size: 13.5px; font-weight: 600; cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .btn:hover { background: #f7f8fc; border-color: #cdd3e1; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: #4338ca; }
+  .btn.danger { color: var(--danger); }
+  .btn.danger:hover { background: #fef2f2; border-color: #fca5a5; }
+
+  /* ---------- Checklist items ---------- */
+  .item {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
+    overflow: hidden;
+  }
+  .item.done { border-color: #bbe7c9; }
+  .item-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; cursor: pointer; user-select: none;
+  }
+  .item-head:hover { background: #fafbfe; }
+  .item.done .item-head { background: var(--done-soft); }
+  .num {
+    flex: none; width: 30px; height: 30px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .item.done .num { background: var(--done); color: #fff; }
+  .item-title { flex: 1; font-weight: 600; font-size: 15px; min-width: 0; overflow-wrap: anywhere; }
+  .item.done .item-title { color: #15803d; }
+  .chev {
+    flex: none; color: var(--muted); transition: transform .2s ease; font-size: 13px;
+  }
+  .item.open .chev { transform: rotate(180deg); }
+  .item-body { display: none; padding: 4px 18px 18px 58px; }
+  .item.open .item-body { display: block; animation: drop .18s ease; }
+  @keyframes drop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .item-desc { margin: 0 0 14px; color: #3d4354; font-size: 14.5px; white-space: pre-wrap; }
+  .item-link {
+    display: inline-block; margin-bottom: 14px;
+    color: var(--accent); font-weight: 600; font-size: 14px; text-decoration: none;
+    border: 1px solid var(--accent-soft); background: var(--accent-soft);
+    padding: 8px 14px; border-radius: 8px;
+  }
+  .item-link:hover { background: #e2e5fd; }
+  .complete-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+  .complete-row input { width: 18px; height: 18px; accent-color: var(--done); cursor: pointer; }
+  .complete-row label { cursor: pointer; }
+
+  /* ---------- Admin editing ---------- */
+  .item-head .edit-title {
+    flex: 1; font: inherit; font-weight: 600; padding: 7px 10px;
+    border: 1px solid var(--line); border-radius: 8px; min-width: 0;
+  }
+  .item-head .edit-title:focus, .field input:focus, .field textarea:focus {
+    outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent);
+  }
+  .mini-btns { display: flex; gap: 4px; flex: none; }
+  .mini {
+    appearance: none; border: 1px solid var(--line); background: var(--card);
+    width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+    font-size: 12px; color: var(--muted); line-height: 1;
+  }
+  .mini:hover { background: #f1f3f9; color: var(--text); }
+  .mini.del:hover { background: #fef2f2; color: var(--danger); border-color: #fca5a5; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .field input, .field textarea {
+    width: 100%; font: inherit; font-size: 14px; padding: 9px 11px;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff;
+  }
+  .field textarea { min-height: 84px; resize: vertical; }
+  .edit-header-fields .field input, .edit-header-fields .field textarea { background: #fff; }
+  .add-row { margin: 14px 0 4px; text-align: center; }
+
+  /* ---------- Footer ---------- */
+  .footer {
+    margin-top: 26px; display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px;
+  }
+  .footer a { color: var(--muted); cursor: pointer; text-decoration: underline; }
+  .footer a:hover { color: var(--text); }
+
+  /* ---------- Modal ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, .45);
+    display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: var(--radius); padding: 24px;
+    width: 100%; max-width: 380px; box-shadow: 0 20px 50px rgba(15, 23, 42, .25);
+  }
+  .modal h2 { margin: 0 0 6px; font-size: 18px; }
+  .modal p { margin: 0 0 14px; color: var(--muted); font-size: 13.5px; }
+  .modal input {
+    width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--line);
+    border-radius: 8px; margin-bottom: 12px;
+  }
+  .modal input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+  .modal .err { color: var(--danger); font-size: 13px; font-weight: 600; margin: -6px 0 10px; display: none; }
+  .modal .err.show { display: block; }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+    background: #1f2433; color: #fff; padding: 11px 18px; border-radius: 10px;
+    font-size: 14px; opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 60;
+    max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 560px) {
+    .item-body { padding-left: 18px; }
+    .header { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     CHECKLIST CONFIGURATION
+     Edited via the in-page admin mode (footer "Admin" link).
+     After editing, use "Download updated checklist" to produce
+     the new file to distribute to employees.
+     ============================================================ -->
+<script type="application/json" id="checklist-config">
+{
+  "title": "New Hire Onboarding Checklist",
+  "subtitle": "Welcome to the team! Work through each item below at your own pace. Click an item to see instructions and a link to the resource, then mark it complete. Your progress is saved on this device.",
+  "passwordHash": "08a3d2dc7693d7166eef51ec0194ae6009c7636af128d4a208a14d1b5293c3cd",
+  "items": [
+    { "id": "i01", "title": "Welcome & first-day schedule", "link": "https://intranet.example.com/welcome", "description": "Review your first-day agenda, where to go, who to ask for, and what to bring on day one." },
+    { "id": "i02", "title": "Sign your employment agreement & NDA", "link": "https://intranet.example.com/hr/agreements", "description": "Electronically sign your offer paperwork, confidentiality agreement, and any outstanding documents in the HR portal." },
+    { "id": "i03", "title": "Complete employment verification (I-9)", "link": "https://intranet.example.com/hr/i9", "description": "Provide your identity and work-authorization documents within your first three days of employment." },
+    { "id": "i04", "title": "Complete tax withholding forms (W-4)", "link": "https://intranet.example.com/hr/tax-forms", "description": "Fill out your federal and state tax withholding elections so payroll can be processed correctly." },
+    { "id": "i05", "title": "Set up direct deposit", "link": "https://intranet.example.com/hr/direct-deposit", "description": "Add your bank account details in the payroll system so your paychecks arrive automatically." },
+    { "id": "i06", "title": "Add an emergency contact", "link": "https://intranet.example.com/hr/emergency-contact", "description": "Enter at least one emergency contact in your employee profile so we can reach someone if needed." },
+    { "id": "i07", "title": "Get your employee ID & badge photo", "link": "https://intranet.example.com/facilities/badge", "description": "Stop by the front desk (or upload a photo) to get your security badge and employee ID issued." },
+    { "id": "i08", "title": "Order business cards", "link": "https://intranet.example.com/facilities/business-cards", "description": "Submit your name, title, and contact details to order your company business cards." },
+    { "id": "i09", "title": "Review the employee handbook", "link": "https://intranet.example.com/hr/handbook", "description": "Read the employee handbook covering policies, expectations, and your rights and responsibilities, then acknowledge it." },
+    { "id": "i10", "title": "Office tour & facilities map", "link": "https://intranet.example.com/facilities/map", "description": "Find meeting rooms, restrooms, kitchens, printers, quiet areas, and emergency exits at your office location." },
+    { "id": "i11", "title": "Pick up your laptop & equipment", "link": "https://intranet.example.com/it/equipment", "description": "Collect your laptop, monitor, and peripherals from IT, and sign the equipment agreement." },
+    { "id": "i12", "title": "Set up your company email", "link": "https://intranet.example.com/it/email", "description": "Log in to your company email account, set your display name, and add your email signature using the company template." },
+    { "id": "i13", "title": "Enroll in multi-factor authentication", "link": "https://intranet.example.com/it/mfa", "description": "Set up MFA on your phone or hardware key. This is required before you can access most company systems." },
+    { "id": "i14", "title": "Install required software", "link": "https://intranet.example.com/it/software", "description": "Install the standard software bundle for your role from the self-service portal." },
+    { "id": "i15", "title": "Join team chat channels", "link": "https://intranet.example.com/it/chat", "description": "Sign in to the company chat tool and join your team, department, and company-wide announcement channels." },
+    { "id": "i16", "title": "Set up VPN access", "link": "https://intranet.example.com/it/vpn", "description": "Install and configure the VPN client so you can securely access internal systems when working remotely." },
+    { "id": "i17", "title": "Set up the password manager", "link": "https://intranet.example.com/it/password-manager", "description": "Activate your company password manager account and move any shared credentials into it. Never store passwords in documents or notes." },
+    { "id": "i18", "title": "IT FAQ & helpdesk", "link": "https://intranet.example.com/it/faq", "description": "Bookmark the IT FAQ and learn how to open a helpdesk ticket when you run into technical issues." },
+    { "id": "i19", "title": "Complete security awareness training", "link": "https://intranet.example.com/training/security", "description": "Finish the mandatory security training covering phishing, data handling, and device security. Due within your first two weeks." },
+    { "id": "i20", "title": "Set up your phone / softphone", "link": "https://intranet.example.com/it/phone", "description": "Configure your desk phone or softphone app, record your voicemail greeting, and add your number to your profile." },
+    { "id": "i21", "title": "Company benefits overview", "link": "https://intranet.example.com/benefits/overview", "description": "Get a full overview of your benefits package: health coverage, retirement, time off, perks, and enrollment deadlines." },
+    { "id": "i22", "title": "Enroll in health insurance", "link": "https://intranet.example.com/benefits/health", "description": "Compare medical plans and enroll yourself (and any dependents) before your enrollment window closes." },
+    { "id": "i23", "title": "Enroll in dental & vision", "link": "https://intranet.example.com/benefits/dental-vision", "description": "Review and elect dental and vision coverage options during your new-hire enrollment window." },
+    { "id": "i24", "title": "Set up retirement / 401(k) contributions", "link": "https://intranet.example.com/benefits/retirement", "description": "Choose your contribution percentage and investments, and review the company match policy." },
+    { "id": "i25", "title": "Review life & disability insurance", "link": "https://intranet.example.com/benefits/life-disability", "description": "Review the company-paid coverage and decide whether to elect additional voluntary coverage." },
+    { "id": "i26", "title": "PTO policy & holiday calendar", "link": "https://intranet.example.com/hr/pto", "description": "Learn how vacation and sick time accrue, how to request time off, and which company holidays are observed this year." },
+    { "id": "i27", "title": "Confirm your working hours & location", "link": "https://intranet.example.com/hr/work-schedule", "description": "Record your standard working hours, time zone, and remote/hybrid schedule in your employee profile." },
+    { "id": "i28", "title": "Commuter benefits & parking", "link": "https://intranet.example.com/benefits/commuter", "description": "Sign up for pre-tax transit benefits or register your vehicle for a parking pass." },
+    { "id": "i29", "title": "Wellness program & gym discounts", "link": "https://intranet.example.com/benefits/wellness", "description": "Explore wellness reimbursements, gym discounts, and mental-health resources available to all employees." },
+    { "id": "i30", "title": "Employee assistance program (EAP)", "link": "https://intranet.example.com/benefits/eap", "description": "Learn about the free, confidential counseling and support services available to you and your family." },
+    { "id": "i31", "title": "Meet your manager (first 1:1)", "link": "https://intranet.example.com/onboarding/manager-1on1", "description": "Schedule your first one-on-one with your manager to align on expectations, priorities, and how you'll work together." },
+    { "id": "i32", "title": "Meet your onboarding buddy", "link": "https://intranet.example.com/onboarding/buddy", "description": "Connect with your assigned onboarding buddy — your go-to person for everyday questions during your first months." },
+    { "id": "i33", "title": "Team introductions", "link": "https://intranet.example.com/onboarding/team", "description": "Meet your immediate teammates and learn what each person works on and how your role fits in." },
+    { "id": "i34", "title": "Org chart & who's who", "link": "https://intranet.example.com/company/org-chart", "description": "Browse the org chart to understand company structure, departments, and key leaders." },
+    { "id": "i35", "title": "Company mission, vision & values", "link": "https://intranet.example.com/company/mission", "description": "Read about why the company exists, where it's headed, and the values that guide how we work." },
+    { "id": "i36", "title": "Communication norms & meeting etiquette", "link": "https://intranet.example.com/company/communication", "description": "Learn which channels we use for what, response-time expectations, and how we run effective meetings." },
+    { "id": "i37", "title": "Join an employee resource group", "link": "https://intranet.example.com/company/ergs", "description": "Browse our employee resource groups and communities, and join any that interest you." },
+    { "id": "i38", "title": "Company events & social calendar", "link": "https://intranet.example.com/company/events", "description": "Check out upcoming all-hands meetings, team events, and social activities you can join." },
+    { "id": "i39", "title": "Set your 30/60/90-day goals", "link": "https://intranet.example.com/onboarding/goals", "description": "Work with your manager to define what success looks like in your first 30, 60, and 90 days." },
+    { "id": "i40", "title": "Schedule intro coffee chats", "link": "https://intranet.example.com/onboarding/coffee-chats", "description": "Book short intro chats with the cross-functional partners you'll work with most often." },
+    { "id": "i41", "title": "Time tracking & timesheets", "link": "https://intranet.example.com/tools/time-tracking", "description": "Learn how and when to submit your timesheet, if your role requires time tracking." },
+    { "id": "i42", "title": "Expense reporting tool", "link": "https://intranet.example.com/tools/expenses", "description": "Set up your expense account, review the expense policy, and learn how to submit receipts for reimbursement." },
+    { "id": "i43", "title": "Project management tool overview", "link": "https://intranet.example.com/tools/projects", "description": "Get access to the project tracking tool your team uses and learn how work is planned and assigned." },
+    { "id": "i44", "title": "Internal wiki & knowledge base", "link": "https://intranet.example.com/tools/wiki", "description": "Bookmark the internal wiki — the first place to look for documentation, how-tos, and team pages." },
+    { "id": "i45", "title": "Complete required compliance training", "link": "https://intranet.example.com/training/compliance", "description": "Finish the mandatory compliance courses (code of conduct, anti-harassment, data privacy) by their due dates." },
+    { "id": "i46", "title": "Review your role-specific training plan", "link": "https://intranet.example.com/training/role", "description": "Go through the training plan for your specific role and schedule any required sessions." },
+    { "id": "i47", "title": "Brand & style guidelines", "link": "https://intranet.example.com/company/brand", "description": "Review logo usage, templates, and writing style guidelines for anything you create or share externally." },
+    { "id": "i48", "title": "Travel booking & policy", "link": "https://intranet.example.com/tools/travel", "description": "Learn how to book business travel through the company travel tool and what the travel policy covers." },
+    { "id": "i49", "title": "Payroll calendar & paystubs", "link": "https://intranet.example.com/hr/payroll", "description": "Find the payroll calendar, learn when you'll be paid, and see how to access your paystubs online." },
+    { "id": "i50", "title": "Complete the 30-day onboarding survey", "link": "https://intranet.example.com/onboarding/survey", "description": "After your first month, tell us how onboarding went so we can improve it for future new hires." }
+  ]
+}
+</script>
+
+<div class="wrap" id="app"></div>
+
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <h2>Admin login</h2>
+    <p>Enter the admin password to edit this checklist.</p>
+    <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+    <div class="err" id="pwErr">Incorrect password. Please try again.</div>
+    <div class="modal-btns">
+      <button class="btn" id="pwCancel">Cancel</button>
+      <button class="btn primary" id="pwSubmit">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* Capture the pristine page source BEFORE any rendering, so the
+   admin "Download updated checklist" feature can rebuild the file
+   with new content baked in. */
+var PRISTINE_SOURCE = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+var PROGRESS_KEY = 'onboarding_progress_v1';
+var DRAFT_KEY = 'onboarding_admin_draft_v1';
+
+/* ---------------- SHA-256 (pure JS, for the admin password) ---------------- */
+// __SHA256_START__
+function sha256(input) {
+  // Convert to a byte string so non-ASCII passwords hash correctly.
+  var ascii = unescape(encodeURIComponent(String(input)));
+  function rightRotate(value, amount) {
+    return (value >>> amount) | (value << (32 - amount));
+  }
+  var maxWord = Math.pow(2, 32);
+  var i, j;
+  var result = '';
+  var words = [];
+  var asciiBitLength = ascii.length * 8;
+
+  var hash = [], k = [];
+  var primeCounter = 0;
+  var isComposite = {};
+  for (var candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (i = 0; i < 313; i += candidate) {
+        isComposite[i] = candidate;
+      }
+      hash[primeCounter] = (Math.pow(candidate, 0.5) * maxWord) | 0;
+      k[primeCounter++] = (Math.pow(candidate, 1 / 3) * maxWord) | 0;
+    }
+  }
+
+  ascii += '\x80';
+  while (ascii.length % 64 - 56) ascii += '\x00';
+  for (i = 0; i < ascii.length; i++) {
+    j = ascii.charCodeAt(i);
+    if (j >> 8) return; // byte string expected
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words.length] = (asciiBitLength / maxWord) | 0;
+  words[words.length] = asciiBitLength;
+
+  for (j = 0; j < words.length;) {
+    var w = words.slice(j, j += 16);
+    var oldHash = hash;
+    hash = hash.slice(0, 8);
+
+    for (i = 0; i < 64; i++) {
+      var w15 = w[i - 15], w2 = w[i - 2];
+      var a = hash[0], e = hash[4];
+      var temp1 = hash[7]
+        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+        + ((e & hash[5]) ^ (~e & hash[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (
+            w[i - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+            + w[i - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+          ) | 0);
+      var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+
+      hash = [(temp1 + temp2) | 0].concat(hash);
+      hash[4] = (hash[4] + temp1) | 0;
+    }
+
+    for (i = 0; i < 8; i++) {
+      hash[i] = (hash[i] + oldHash[i]) | 0;
+    }
+  }
+
+  for (i = 0; i < 8; i++) {
+    for (j = 3; j + 1; j--) {
+      var b = (hash[i] >> (j * 8)) & 255;
+      result += ((b < 16) ? '0' : '') + b.toString(16);
+    }
+  }
+  return result;
+}
+// __SHA256_END__
+
+/* ---------------- State ---------------- */
+var config = JSON.parse(document.getElementById('checklist-config').textContent);
+var isAdmin = false;
+var isDirty = false;
+var openIds = {};
+var completed = {};
+try {
+  JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]').forEach(function (id) { completed[id] = true; });
+} catch (e) { /* corrupted progress data: start fresh */ }
+
+var app = document.getElementById('app');
+
+function uid() {
+  return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function saveProgress() {
+  var ids = config.items.filter(function (it) { return completed[it.id]; }).map(function (it) { return it.id; });
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(ids)); } catch (e) {}
+}
+
+function saveDraft() {
+  isDirty = true;
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(config)); } catch (e) {}
+  updateAdminNote();
+}
+
+function el(tag, className, text) {
+  var node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(function () { t.classList.remove('show'); }, 3200);
+}
+
+/* ---------------- Rendering ---------------- */
+function doneCount() {
+  return config.items.reduce(function (n, it) { return n + (completed[it.id] ? 1 : 0); }, 0);
+}
+
+function render() {
+  document.title = config.title || 'Onboarding Checklist';
+  app.innerHTML = '';
+  app.appendChild(renderHeader());
+  if (isAdmin) app.appendChild(renderToolbar());
+  var list = el('div');
+  config.items.forEach(function (item, idx) {
+    list.appendChild(isAdmin ? renderAdminItem(item, idx) : renderItem(item, idx));
+  });
+  app.appendChild(list);
+  if (isAdmin) {
+    var addRow = el('div', 'add-row');
+    var addBtn = el('button', 'btn primary', '+ Add checklist item');
+    addBtn.onclick = function () {
+      var item = { id: uid(), title: 'New item', link: '', description: '' };
+      config.items.push(item);
+      openIds[item.id] = true;
+      saveDraft();
+      render();
+      var heads = app.querySelectorAll('.edit-title');
+      var last = heads[heads.length - 1];
+      if (last) { last.focus(); last.select(); }
+    };
+    addRow.appendChild(addBtn);
+    app.appendChild(addRow);
+  }
+  app.appendChild(renderFooter());
+}
+
+function renderHeader() {
+  var header = el('div', 'header' + (isAdmin ? ' admin-banner' : ''));
+
+  if (isAdmin) {
+    var fields = el('div', 'edit-header-fields');
+    var tf = el('div', 'field');
+    tf.appendChild(el('label', null, 'Checklist title'));
+    var ti = el('input');
+    ti.value = config.title || '';
+    ti.oninput = function () { config.title = ti.value; saveDraft(); };
+    tf.appendChild(ti);
+    fields.appendChild(tf);
+
+    var sf = el('div', 'field');
+    sf.appendChild(el('label', null, 'Welcome message / subtitle'));
+    var si = el('textarea');
+    si.value = config.subtitle || '';
+    si.oninput = function () { config.subtitle = si.value; saveDraft(); };
+    sf.appendChild(si);
+    fields.appendChild(sf);
+    header.appendChild(fields);
+  } else {
+    header.appendChild(el('h1', null, config.title || 'Onboarding Checklist'));
+    if (config.subtitle) header.appendChild(el('p', 'subtitle', config.subtitle));
+  }
+
+  var total = config.items.length;
+  var done = doneCount();
+  var pct = total ? Math.round(done / total * 100) : 0;
+
+  var row = el('div', 'progress-row');
+  row.appendChild(el('span', 'pct', pct + '% complete'));
+  row.appendChild(el('span', 'count', done + ' of ' + total + ' items done'));
+  header.appendChild(row);
+
+  var bar = el('div', 'bar');
+  var fill = el('div', 'fill' + (pct === 100 ? ' full' : ''));
+  bar.appendChild(fill);
+  header.appendChild(bar);
+  requestAnimationFrame(function () { fill.style.width = pct + '%'; });
+
+  if (isAdmin) {
+    var note = el('div', 'admin-note');
+    note.id = 'adminNote';
+    header.appendChild(note);
+  }
+  updateAdminNote(header);
+  return header;
+}
+
+function updateAdminNote(scope) {
+  var note = (scope || document).querySelector('#adminNote');
+  if (!note) return;
+  if (isDirty) {
+    note.className = 'admin-note dirty';
+    note.textContent = 'Unsaved changes — use "Download updated checklist" to create the new file to share with employees.';
+  } else {
+    note.className = 'admin-note';
+    note.textContent = 'Admin mode: edit any field below. Changes are locked for employees once you download and distribute the file.';
+  }
+}
+
+function renderToolbar() {
+  var bar = el('div', 'toolbar');
+
+  var dl = el('button', 'btn primary', '⬇ Download updated checklist');
+  dl.onclick = downloadUpdatedFile;
+  bar.appendChild(dl);
+
+  var pw = el('button', 'btn', 'Change admin password');
+  pw.onclick = changePassword;
+  bar.appendChild(pw);
+
+  var discard = el('button', 'btn danger', 'Discard changes');
+  discard.onclick = function () {
+    if (!confirm('Discard all unsaved changes and reload the original content from this file?')) return;
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    config = JSON.parse(document.getElementById('checklist-config').textContent);
+    isDirty = false;
+    render();
+    toast('Changes discarded.');
+  };
+  bar.appendChild(discard);
+
+  var exit = el('button', 'btn', 'Exit admin mode');
+  exit.onclick = function () {
+    if (isDirty && !confirm('You have changes that are not yet in a downloaded file. They are kept as a draft in this browser, but employees will not see them until you download and distribute the updated file.\n\nExit admin mode anyway?')) return;
+    isAdmin = false;
+    render();
+  };
+  bar.appendChild(exit);
+
+  return bar;
+}
+
+function renderItem(item, idx) {
+  var isDone = !!completed[item.id];
+  var card = el('div', 'item' + (openIds[item.id] ? ' open' : '') + (isDone ? ' done' : ''));
+
+  var head = el('div', 'item-head');
+  head.appendChild(el('div', 'num', isDone ? '✓' : String(idx + 1)));
+  head.appendChild(el('div', 'item-title', item.title || 'Untitled item'));
+  head.appendChild(el('div', 'chev', '▼'));
+  head.onclick = function () {
+    if (openIds[item.id]) delete openIds[item.id]; else openIds[item.id] = true;
+    render();
+  };
+  card.appendChild(head);
+
+  var body = el('div', 'item-body');
+  if (item.description) body.appendChild(el('p', 'item-desc', item.description));
+  if (item.link) {
+    var a = el('a', 'item-link', 'Open resource ↗');
+    a.href = item.link;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.onclick = function (e) { e.stopPropagation(); };
+    body.appendChild(a);
+  }
+
+  var row = el('div', 'complete-row');
+  var cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.id = 'cb-' + item.id;
+  cb.checked = isDone;
+  cb.onchange = function () {
+    if (cb.checked) completed[item.id] = true; else delete completed[item.id];
+    saveProgress();
+    render();
+  };
+  var lbl = el('label', null, isDone ? 'Completed' : 'Mark as complete');
+  lbl.htmlFor = cb.id;
+  row.appendChild(cb);
+  row.appendChild(lbl);
+  body.appendChild(row);
+
+  card.appendChild(body);
+  return card;
+}
+
+function renderAdminItem(item, idx) {
+  var card = el('div', 'item' + (openIds[item.id] ? ' open' : ''));
+
+  var head = el('div', 'item-head');
+  head.appendChild(el('div', 'num', String(idx + 1)));
+
+  var ti = document.createElement('input');
+  ti.className = 'edit-title';
+  ti.value = item.title || '';
+  ti.placeholder = 'Item title';
+  ti.onclick = function (e) { e.stopPropagation(); };
+  ti.oninput = function () { item.title = ti.value; saveDraft(); };
+  head.appendChild(ti);
+
+  var btns = el('div', 'mini-btns');
+  var up = el('button', 'mini', '▲');
+  up.title = 'Move up';
+  up.onclick = function (e) {
+    e.stopPropagation();
+    if (idx === 0) return;
+    config.items.splice(idx, 1);
+    config.items.splice(idx - 1, 0, item);
+    saveDraft();
+    render();
+  };
+  var down = el('button', 'mini', '▼');
+  down.title = 'Move down';
+  down.onclick = function (e) {
+    e.stopPropagation();
+    if (idx === config.items.length - 1) return;
+    config.items.splice(idx, 1);
+    config.items.splice(idx + 1, 0, item);
+    saveDraft();
+    render();
+  };
+  var del = el('button', 'mini del', '✕');
+  del.title = 'Delete item';
+  del.onclick = function (e) {
+    e.stopPropagation();
+    if (!confirm('Delete "' + (item.title || 'Untitled item') + '"?')) return;
+    config.items.splice(idx, 1);
+    delete openIds[item.id];
+    saveDraft();
+    render();
+  };
+  btns.appendChild(up);
+  btns.appendChild(down);
+  btns.appendChild(del);
+  head.appendChild(btns);
+
+  var chev = el('div', 'chev', '▼');
+  head.appendChild(chev);
+  head.onclick = function () {
+    if (openIds[item.id]) delete openIds[item.id]; else openIds[item.id] = true;
+    render();
+  };
+  card.appendChild(head);
+
+  var body = el('div', 'item-body');
+
+  var lf = el('div', 'field');
+  lf.appendChild(el('label', null, 'Resource link (URL)'));
+  var li = document.createElement('input');
+  li.type = 'url';
+  li.value = item.link || '';
+  li.placeholder = 'https://...';
+  li.oninput = function () { item.link = li.value; saveDraft(); };
+  lf.appendChild(li);
+  body.appendChild(lf);
+
+  var df = el('div', 'field');
+  df.appendChild(el('label', null, 'Description'));
+  var di = document.createElement('textarea');
+  di.value = item.description || '';
+  di.placeholder = 'Explain what this item is about and what the employee should do.';
+  di.oninput = function () { item.description = di.value; saveDraft(); };
+  df.appendChild(di);
+  body.appendChild(df);
+
+  card.appendChild(body);
+  return card;
+}
+
+function renderFooter() {
+  var foot = el('div', 'footer');
+  var left = el('span', null, 'Progress is saved on this device.');
+  foot.appendChild(left);
+
+  var right = el('span');
+  var reset = el('a', null, 'Reset my progress');
+  reset.onclick = function () {
+    if (!confirm('Clear all your checkmarks on this device?')) return;
+    completed = {};
+    saveProgress();
+    render();
+  };
+  right.appendChild(reset);
+  right.appendChild(document.createTextNode('  ·  '));
+  var adminLink = el('a', null, isAdmin ? 'Admin mode active' : 'Admin');
+  if (!isAdmin) adminLink.onclick = showLogin;
+  right.appendChild(adminLink);
+  foot.appendChild(right);
+  return foot;
+}
+
+/* ---------------- Admin login ---------------- */
+function showLogin() {
+  var overlay = document.getElementById('loginOverlay');
+  var input = document.getElementById('pwInput');
+  var err = document.getElementById('pwErr');
+  err.classList.remove('show');
+  input.value = '';
+  overlay.classList.add('show');
+  input.focus();
+
+  function close() {
+    overlay.classList.remove('show');
+    document.getElementById('pwSubmit').onclick = null;
+    document.getElementById('pwCancel').onclick = null;
+    input.onkeydown = null;
+  }
+  function submit() {
+    if (sha256(input.value) === config.passwordHash) {
+      close();
+      enterAdmin();
+    } else {
+      err.classList.add('show');
+      input.select();
+    }
+  }
+  document.getElementById('pwSubmit').onclick = submit;
+  document.getElementById('pwCancel').onclick = close;
+  input.onkeydown = function (e) {
+    if (e.key === 'Enter') submit();
+    if (e.key === 'Escape') close();
+  };
+}
+
+function enterAdmin() {
+  isAdmin = true;
+  var draft = null;
+  try { draft = localStorage.getItem(DRAFT_KEY); } catch (e) {}
+  if (draft && draft !== JSON.stringify(config)) {
+    if (confirm('You have an unsaved draft from a previous editing session in this browser. Restore it?')) {
+      try {
+        config = JSON.parse(draft);
+        isDirty = true;
+      } catch (e) { toast('Draft was corrupted and could not be restored.'); }
+    } else {
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    }
+  }
+  render();
+}
+
+function changePassword() {
+  var p1 = prompt('Enter a new admin password (at least 6 characters):');
+  if (p1 === null) return;
+  if (p1.length < 6) { alert('Password must be at least 6 characters.'); return; }
+  var p2 = prompt('Confirm the new password:');
+  if (p2 === null) return;
+  if (p1 !== p2) { alert('Passwords did not match. Password was not changed.'); return; }
+  config.passwordHash = sha256(p1);
+  saveDraft();
+  render();
+  toast('Password changed. Download the updated file to make it permanent.');
+}
+
+/* ---------------- Export ---------------- */
+function buildUpdatedSource() {
+  var json = JSON.stringify(config, null, 2).replace(/</g, '\\u003c');
+  var startTag = '<script type="application/json" id="checklist-config">';
+  var start = PRISTINE_SOURCE.indexOf(startTag);
+  var end = PRISTINE_SOURCE.indexOf('<\/script>', start);
+  if (start === -1 || end === -1) return null;
+  return PRISTINE_SOURCE.slice(0, start + startTag.length) + '\n' + json + '\n' + PRISTINE_SOURCE.slice(end);
+}
+
+function downloadUpdatedFile() {
+  var source = buildUpdatedSource();
+  if (!source) { alert('Could not rebuild the file. Please copy your changes manually.'); return; }
+  var blob = new Blob([source], { type: 'text/html' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'new-hire-onboarding-checklist.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+  isDirty = false;
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  updateAdminNote();
+  toast('Downloaded! Share that file with employees — it has your changes locked in.');
+}
+
+render();
+</script>
+</body>
+</html>
