@@ -54,6 +54,47 @@ If you close the page with unsaved edits, they're kept as a draft in your
 browser and you'll be offered the chance to restore them the next time you
 log in to admin mode on the same device.
 
+## Hosting on GitHub Pages
+
+The checklist is set up to be hosted for free at:
+
+> **https://cxzb2bfjjx-cpu.github.io/azlungonboarding/**
+
+One-time setup (about 2 minutes, done in the GitHub web UI):
+
+1. **Rename the repository to `azlungonboarding`** so the URL reads
+   "azlungonboarding": *Settings → General → Repository name* → type
+   `azlungonboarding` → **Rename**. (Skip this step and the URL is
+   `https://cxzb2bfjjx-cpu.github.io/New-Hire-Onboarding-Checklist/` instead.)
+2. **Make the repository public** if it is currently private (free GitHub
+   accounts can only use Pages on public repos): *Settings → General →
+   Danger Zone → Change visibility → Public*.
+3. **Turn on Pages**: *Settings → Pages → Build and deployment* →
+   Source: **Deploy from a branch** → Branch: **main**, folder: **/ (root)**
+   → **Save**.
+4. Wait a minute or two, then refresh the Pages settings page — your live
+   URL appears at the top. Share that link with new hires.
+5. (Optional) Set `main` as the default branch: *Settings → General →
+   Default branch*.
+
+If you later buy a real domain (e.g. `azlungonboarding.com`), enter it in
+the **Custom domain** box on that same *Settings → Pages* screen and follow
+GitHub's DNS prompts — everything else stays the same.
+
+### Updating the live site
+
+Once hosted, "distribute the new file" becomes "replace the file in the repo":
+
+1. In admin mode, click **⬇ Download updated checklist**.
+2. Rename the download to `index.html`.
+3. On GitHub (`main` branch): *Add file → Upload files* → drop in
+   `index.html` → **Commit changes**. The live site updates within a couple
+   of minutes; employees just refresh the page and their progress is kept.
+
+> Note: a GitHub Pages site is publicly reachable by anyone who has the
+> URL, even though it's unlisted. Keep that in mind for what you put in
+> descriptions and links.
+
 ## Security note
 
 The admin password is stored as a SHA-256 hash inside the file, so it isn't
