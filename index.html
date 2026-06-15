@@ -526,6 +526,11 @@ function renderToolbar() {
   dl.onclick = downloadUpdatedFile;
   bar.appendChild(dl);
 
+  var imp = el('button', 'btn', '⬆ Import from saved file');
+  imp.title = 'Load all content from a checklist file you saved earlier';
+  imp.onclick = importFromFile;
+  bar.appendChild(imp);
+
   var pw = el('button', 'btn', 'Change admin password');
   pw.onclick = changePassword;
   bar.appendChild(pw);
@@ -796,6 +801,65 @@ function downloadUpdatedFile() {
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
   updateAdminNote();
   toast('Downloaded! Share that file with employees — it has your changes locked in.');
+}
+
+/* ---------------- Import ---------------- */
+/* Pull the saved content (title, subtitle, password, items) out of a
+   checklist file the admin saved earlier — either a full HTML copy of this
+   tool or a raw JSON export — so content survives upgrades to the code. */
+function extractConfig(text) {
+  var startTag = '<script type="application/json" id="checklist-config">';
+  var jsonText = null;
+  var s = text.indexOf(startTag);
+  if (s !== -1) {
+    var e = text.indexOf('<\/script>', s);
+    if (e !== -1) jsonText = text.slice(s + startTag.length, e);
+  }
+  if (jsonText === null) jsonText = text; // maybe the file is raw JSON
+  var obj;
+  try { obj = JSON.parse(jsonText); } catch (err) { return null; }
+  if (!obj || !Array.isArray(obj.items)) return null;
+  obj.items = obj.items.map(function (it) {
+    it = it || {};
+    return {
+      id: it.id || uid(),
+      title: typeof it.title === 'string' ? it.title : '',
+      link: typeof it.link === 'string' ? it.link : '',
+      description: typeof it.description === 'string' ? it.description : ''
+    };
+  });
+  if (typeof obj.title !== 'string') obj.title = config.title;
+  if (typeof obj.subtitle !== 'string') obj.subtitle = config.subtitle;
+  if (typeof obj.passwordHash !== 'string') obj.passwordHash = config.passwordHash;
+  return obj;
+}
+
+function importFromFile() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.html,.htm,.json,text/html,application/json';
+  input.onchange = function () {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var imported = extractConfig(String(reader.result));
+      if (!imported) {
+        alert('Could not find checklist content in "' + file.name + '".\n\nPick a checklist HTML file you saved/downloaded from this tool (or a JSON export from it).');
+        return;
+      }
+      if (!confirm('Load ' + imported.items.length + ' item(s) from "' + file.name + '"?\n\nThis replaces the content currently shown here (titles, links, descriptions' + (imported.passwordHash !== config.passwordHash ? ', and the admin password' : '') + '). Nothing is final until you click "Download updated checklist".')) return;
+      config = imported;
+      openIds = {};
+      isDirty = true;
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(config)); } catch (e) {}
+      render();
+      toast('Imported ' + config.items.length + ' items. Review them, then click "Download updated checklist" to save the merged file.');
+    };
+    reader.onerror = function () { alert('Could not read that file. Please try again.'); };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
 render();

@@ -59,6 +59,22 @@ If you close the page with unsaved edits, they're kept as a draft in your
 browser and you'll be offered the chance to restore them the next time you
 log in to admin mode on the same device.
 
+### Importing content from a saved file (upgrades & recovery)
+
+Your content lives **inside the file copy you saved**, not in any server.
+So if you get a newer version of this tool (with new features) but it shows
+the blank sample items, you don't have to re-type anything:
+
+1. Open the new file and log in to admin mode.
+2. Click **⬆ Import from saved file** and choose the checklist file you
+   saved earlier (the `.html` you downloaded, or a JSON export of it).
+3. All your content — title, welcome message, every item's title/link/
+   description, and your admin password — loads into the new version.
+4. Click **⬇ Download updated checklist** to save the merged file, and
+   distribute that.
+
+This is the supported way to carry your content forward across versions.
+
 ## Hosting on GitHub Pages
 
 The checklist is set up to be hosted for free at:
