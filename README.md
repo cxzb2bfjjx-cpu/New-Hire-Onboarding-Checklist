@@ -10,8 +10,9 @@ or a shared network folder.
 
 1. Open `index.html` (or the file you were sent) in any modern browser —
    double-clicking it works; no installation needed.
-2. Click any item to expand it and see what to do, plus a link to the
-   relevant company resource.
+2. Click any item to expand it and see what to do. Each item can show a
+   clickable link to the resource, or — when there's no link — plain-text
+   instructions for how to access it (some items have neither).
 3. Tick **Mark as complete** on each item. The progress bar at the top
    updates automatically.
 4. Progress is saved in the browser on that device, so you can close the
@@ -33,7 +34,11 @@ Click **Admin** in the page footer and enter the password.
 ### What you can edit
 
 - The checklist **title** and **welcome message**
-- Each item's **title**, **resource link**, and **description**
+- Each item's **title**, **description**, and **resource link or access
+  instructions**. Whatever you type in that box is shown to employees: a full
+  URL (`https://...` or `www....`) becomes a clickable link displaying that
+  address; anything else is shown as plain text (e.g. "Ask your manager for
+  access"). Leave it blank to show nothing.
 - **Add** items (the "+ Add checklist item" button), **delete** items (✕),
   and **reorder** them (▲ ▼) — so the list can grow past 50 or shrink as
   your onboarding process evolves

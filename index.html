@@ -115,12 +115,17 @@
   @keyframes drop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
   .item-desc { margin: 0 0 14px; color: #3d4354; font-size: 14.5px; white-space: pre-wrap; }
   .item-link {
-    display: inline-block; margin-bottom: 14px;
+    display: inline-block; margin-bottom: 14px; max-width: 100%;
     color: var(--accent); font-weight: 600; font-size: 14px; text-decoration: none;
     border: 1px solid var(--accent-soft); background: var(--accent-soft);
-    padding: 8px 14px; border-radius: 8px;
+    padding: 8px 14px; border-radius: 8px; overflow-wrap: anywhere;
   }
   .item-link:hover { background: #e2e5fd; }
+  .item-access {
+    margin: 0 0 14px; padding: 10px 14px; border-radius: 8px;
+    background: #f1f3f9; border: 1px solid var(--line);
+    color: #3d4354; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
   .complete-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
   .complete-row input { width: 18px; height: 18px; accent-color: var(--done); cursor: pointer; }
   .complete-row label { cursor: pointer; }
@@ -143,6 +148,7 @@
   .mini.del:hover { background: #fef2f2; color: var(--danger); border-color: #fca5a5; }
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .field-hint { margin-top: 5px; font-size: 12px; color: var(--muted); }
   .field input, .field textarea {
     width: 100%; font: inherit; font-size: 14px; padding: 9px 11px;
     border: 1px solid var(--line); border-radius: 8px; background: #fff;
@@ -384,6 +390,13 @@ function uid() {
   return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+/* A resource field counts as a clickable link only if the whole value is a
+   single URL (http(s):// or www.) with no spaces. Anything else — including
+   plain instructions like "Ask your manager for access" — shows as text. */
+function isUrl(text) {
+  return /^(https?:\/\/|www\.)\S+$/i.test((text || '').trim());
+}
+
 function saveProgress() {
   var ids = config.items.filter(function (it) { return completed[it.id]; }).map(function (it) { return it.id; });
   try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(ids)); } catch (e) {}
@@ -555,13 +568,18 @@ function renderItem(item, idx) {
 
   var body = el('div', 'item-body');
   if (item.description) body.appendChild(el('p', 'item-desc', item.description));
-  if (item.link) {
-    var a = el('a', 'item-link', 'Open resource ↗');
-    a.href = item.link;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.onclick = function (e) { e.stopPropagation(); };
-    body.appendChild(a);
+  var access = (item.link || '').trim();
+  if (access) {
+    if (isUrl(access)) {
+      var a = el('a', 'item-link', access + ' ↗');
+      a.href = /^https?:\/\//i.test(access) ? access : 'https://' + access;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.onclick = function (e) { e.stopPropagation(); };
+      body.appendChild(a);
+    } else {
+      body.appendChild(el('p', 'item-access', access));
+    }
   }
 
   var row = el('div', 'complete-row');
@@ -645,13 +663,14 @@ function renderAdminItem(item, idx) {
   var body = el('div', 'item-body');
 
   var lf = el('div', 'field');
-  lf.appendChild(el('label', null, 'Resource link (URL)'));
+  lf.appendChild(el('label', null, 'Resource link or access instructions'));
   var li = document.createElement('input');
-  li.type = 'url';
+  li.type = 'text';
   li.value = item.link || '';
-  li.placeholder = 'https://...';
+  li.placeholder = 'https://...  — or plain text, e.g. "Ask your manager for access"';
   li.oninput = function () { item.link = li.value; saveDraft(); };
   lf.appendChild(li);
+  lf.appendChild(el('div', 'field-hint', 'A full URL becomes a clickable link showing that address. Anything else is shown as plain text. Leave blank for none.'));
   body.appendChild(lf);
 
   var df = el('div', 'field');
