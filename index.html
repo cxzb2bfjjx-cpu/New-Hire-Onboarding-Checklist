@@ -3,6 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4f46e5">
+<!-- Behaves nicely when an employee saves it to their phone Home Screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Onboarding">
+<!-- Discourage stale caching of the page shell -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>New Hire Onboarding Checklist</title>
 <style>
   :root {
@@ -149,6 +159,11 @@
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
   .field-hint { margin-top: 5px; font-size: 12px; color: var(--muted); }
+  .link-preview { margin-top: 6px; font-size: 12.5px; font-weight: 600; overflow-wrap: anywhere; }
+  .link-preview.link { color: var(--accent); }
+  .link-preview.text { color: #92600a; }
+  .link-preview.none { color: var(--muted); font-weight: 500; }
+  .loading { text-align: center; color: var(--muted); padding: 48px 0; font-size: 15px; }
   .field input, .field textarea {
     width: 100%; font: inherit; font-size: 14px; padding: 9px 11px;
     border: 1px solid var(--line); border-radius: 8px; background: #fff;
@@ -204,10 +219,12 @@
 <body>
 
 <!-- ============================================================
-     CHECKLIST CONFIGURATION
-     Edited via the in-page admin mode (footer "Admin" link).
-     After editing, use "Download updated checklist" to produce
-     the new file to distribute to employees.
+     FALLBACK CHECKLIST CONTENT
+     When hosted on a website, the page loads its real content from
+     content.json (next to this file) fresh on every visit, so updates
+     never get stuck behind a cache. This embedded copy is only used as
+     a fallback when content.json can't be loaded (e.g. opening the file
+     directly from disk). Edit content in the in-page admin mode.
      ============================================================ -->
 <script type="application/json" id="checklist-config">
 {
@@ -375,7 +392,10 @@ function sha256(input) {
 // __SHA256_END__
 
 /* ---------------- State ---------------- */
-var config = JSON.parse(document.getElementById('checklist-config').textContent);
+var EMBEDDED_CONFIG = JSON.parse(document.getElementById('checklist-config').textContent);
+var config = EMBEDDED_CONFIG;       // current working content (replaced by content.json when hosted)
+var loadedConfig = EMBEDDED_CONFIG; // pristine copy of whatever was loaded, for "Discard changes"
+var contentSource = 'embedded';     // 'embedded' | 'json' | 'json-missing'
 var isAdmin = false;
 var isDirty = false;
 var openIds = {};
@@ -390,11 +410,48 @@ function uid() {
   return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-/* A resource field counts as a clickable link only if the whole value is a
-   single URL (http(s):// or www.) with no spaces. Anything else — including
-   plain instructions like "Ask your manager for access" — shows as text. */
+/* Decide whether a resource value should be a clickable link. It is a link
+   when the whole value is a single token (no spaces) that looks like a web
+   address — with or without a scheme — e.g. https://x.com, www.x.com,
+   intranet.acme.com/benefits, mailto:hr@acme.com, tel:+15551234.
+   Anything with spaces (e.g. "Ask your manager for access") is plain text. */
 function isUrl(text) {
-  return /^(https?:\/\/|www\.)\S+$/i.test((text || '').trim());
+  var t = (text || '').trim();
+  if (!t || /\s/.test(t)) return false;
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(t)) return true;
+  if (/^www\./i.test(t)) return true;
+  // bare domain, optionally with port/path/query, e.g. acme.com or docs.acme.com/hr
+  return /^[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([\/?#]\S*)?$/i.test(t);
+}
+
+/* Build the href for a link value, adding https:// to schemeless addresses. */
+function hrefFor(text) {
+  var t = (text || '').trim();
+  return /^(https?:\/\/|mailto:|tel:)/i.test(t) ? t : 'https://' + t;
+}
+
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+/* Coerce any loaded/imported object into a valid config, filling gaps from a
+   fallback (the embedded default) so the tool never breaks on partial data. */
+function normalizeConfig(obj, fb) {
+  obj = obj || {};
+  fb = fb || EMBEDDED_CONFIG;
+  var items = Array.isArray(obj.items) ? obj.items : fb.items;
+  return {
+    title: typeof obj.title === 'string' ? obj.title : fb.title,
+    subtitle: typeof obj.subtitle === 'string' ? obj.subtitle : fb.subtitle,
+    passwordHash: (typeof obj.passwordHash === 'string' && obj.passwordHash) ? obj.passwordHash : fb.passwordHash,
+    items: items.map(function (it) {
+      it = it || {};
+      return {
+        id: it.id || uid(),
+        title: typeof it.title === 'string' ? it.title : '',
+        link: typeof it.link === 'string' ? it.link : '',
+        description: typeof it.description === 'string' ? it.description : ''
+      };
+    })
+  };
 }
 
 function saveProgress() {
@@ -512,22 +569,34 @@ function updateAdminNote(scope) {
   if (!note) return;
   if (isDirty) {
     note.className = 'admin-note dirty';
-    note.textContent = 'Unsaved changes — use "Download updated checklist" to create the new file to share with employees.';
+    note.textContent = 'Unsaved changes. Click "Download content file", then upload that content.json to your site to publish. (index.html never needs to change.)';
+  } else if (contentSource === 'json-missing') {
+    note.className = 'admin-note dirty';
+    note.textContent = 'No content.json found on this site yet, so this is the built-in sample. Edit below, click "Download content file", and upload content.json next to index.html.';
+  } else if (contentSource === 'embedded') {
+    note.className = 'admin-note';
+    note.textContent = 'Opened directly from a file (not a website). Edit below, then use "Download standalone HTML" to save a new copy.';
   } else {
     note.className = 'admin-note';
-    note.textContent = 'Admin mode: edit any field below. Changes are locked for employees once you download and distribute the file.';
+    note.textContent = 'Editing the live content (content.json). Edit any field, then "Download content file" and upload it to publish.';
   }
 }
 
 function renderToolbar() {
   var bar = el('div', 'toolbar');
 
-  var dl = el('button', 'btn primary', '⬇ Download updated checklist');
-  dl.onclick = downloadUpdatedFile;
+  var dl = el('button', 'btn primary', '⬇ Download content file');
+  dl.title = 'Save content.json — the one small file you upload to your site to publish changes';
+  dl.onclick = downloadContentJson;
   bar.appendChild(dl);
 
+  var html = el('button', 'btn', 'Download standalone HTML');
+  html.title = 'Save a full self-contained copy of the page (for opening offline, not a website)';
+  html.onclick = downloadStandaloneHtml;
+  bar.appendChild(html);
+
   var imp = el('button', 'btn', '⬆ Import from saved file');
-  imp.title = 'Load all content from a checklist file you saved earlier';
+  imp.title = 'Load all content from a checklist file you saved earlier (content.json or HTML)';
   imp.onclick = importFromFile;
   bar.appendChild(imp);
 
@@ -537,9 +606,9 @@ function renderToolbar() {
 
   var discard = el('button', 'btn danger', 'Discard changes');
   discard.onclick = function () {
-    if (!confirm('Discard all unsaved changes and reload the original content from this file?')) return;
+    if (!confirm('Discard all unsaved changes and reload the last loaded content?')) return;
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-    config = JSON.parse(document.getElementById('checklist-config').textContent);
+    config = clone(loadedConfig);
     isDirty = false;
     render();
     toast('Changes discarded.');
@@ -548,7 +617,7 @@ function renderToolbar() {
 
   var exit = el('button', 'btn', 'Exit admin mode');
   exit.onclick = function () {
-    if (isDirty && !confirm('You have changes that are not yet in a downloaded file. They are kept as a draft in this browser, but employees will not see them until you download and distribute the updated file.\n\nExit admin mode anyway?')) return;
+    if (isDirty && !confirm('You have changes that have not been saved to a content file yet. They are kept as a draft in this browser, but employees will not see them until you download content.json and upload it.\n\nExit admin mode anyway?')) return;
     isAdmin = false;
     render();
   };
@@ -576,10 +645,10 @@ function renderItem(item, idx) {
   var access = (item.link || '').trim();
   if (access) {
     if (isUrl(access)) {
-      var a = el('a', 'item-link', access + ' ↗');
-      a.href = /^https?:\/\//i.test(access) ? access : 'https://' + access;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
+      var web = !/^(mailto:|tel:)/i.test(access);
+      var a = el('a', 'item-link', access + (web ? ' ↗' : ''));
+      a.href = hrefFor(access);
+      if (web) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
       a.onclick = function (e) { e.stopPropagation(); };
       body.appendChild(a);
     } else {
@@ -673,9 +742,25 @@ function renderAdminItem(item, idx) {
   li.type = 'text';
   li.value = item.link || '';
   li.placeholder = 'https://...  — or plain text, e.g. "Ask your manager for access"';
-  li.oninput = function () { item.link = li.value; saveDraft(); };
+  var preview = el('div', 'link-preview');
+  function refreshPreview() {
+    var v = (li.value || '').trim();
+    if (!v) {
+      preview.className = 'link-preview none';
+      preview.textContent = 'Nothing will show here.';
+    } else if (isUrl(v)) {
+      preview.className = 'link-preview link';
+      preview.textContent = '🔗 Clickable link → ' + hrefFor(v);
+    } else {
+      preview.className = 'link-preview text';
+      preview.textContent = '📝 Shows as plain text (not clickable).';
+    }
+  }
+  li.oninput = function () { item.link = li.value; saveDraft(); refreshPreview(); };
+  refreshPreview();
   lf.appendChild(li);
-  lf.appendChild(el('div', 'field-hint', 'A full URL becomes a clickable link showing that address. Anything else is shown as plain text. Leave blank for none.'));
+  lf.appendChild(preview);
+  lf.appendChild(el('div', 'field-hint', 'Paste a web address (with or without https://) to make a clickable link. Type anything else to show plain instructions. Leave blank for none.'));
   body.appendChild(lf);
 
   var df = el('div', 'field');
@@ -773,10 +858,32 @@ function changePassword() {
   config.passwordHash = sha256(p1);
   saveDraft();
   render();
-  toast('Password changed. Download the updated file to make it permanent.');
+  toast('Password changed. Click "Download content file" and upload it to make it permanent.');
 }
 
 /* ---------------- Export ---------------- */
+function triggerDownload(blob, filename) {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+}
+
+/* Primary save for hosted sites: the small content file the page loads. */
+function downloadContentJson() {
+  triggerDownload(new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' }), 'content.json');
+  loadedConfig = clone(config);
+  isDirty = false;
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  updateAdminNote();
+  toast('Saved content.json. Upload just this one file to your site to publish — index.html stays as it is.');
+}
+
+/* Rebuild a full standalone copy of this page with the current content baked
+   in — for people who open the file directly instead of hosting it. */
 function buildUpdatedSource() {
   var json = JSON.stringify(config, null, 2).replace(/</g, '\\u003c');
   var startTag = '<script type="application/json" id="checklist-config">';
@@ -786,21 +893,11 @@ function buildUpdatedSource() {
   return PRISTINE_SOURCE.slice(0, start + startTag.length) + '\n' + json + '\n' + PRISTINE_SOURCE.slice(end);
 }
 
-function downloadUpdatedFile() {
+function downloadStandaloneHtml() {
   var source = buildUpdatedSource();
   if (!source) { alert('Could not rebuild the file. Please copy your changes manually.'); return; }
-  var blob = new Blob([source], { type: 'text/html' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'new-hire-onboarding-checklist.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
-  isDirty = false;
-  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
-  updateAdminNote();
-  toast('Downloaded! Share that file with employees — it has your changes locked in.');
+  triggerDownload(new Blob([source], { type: 'text/html' }), 'new-hire-onboarding-checklist.html');
+  toast('Downloaded a standalone copy with your content baked in (for opening the file directly, offline).');
 }
 
 /* ---------------- Import ---------------- */
@@ -815,23 +912,11 @@ function extractConfig(text) {
     var e = text.indexOf('<\/script>', s);
     if (e !== -1) jsonText = text.slice(s + startTag.length, e);
   }
-  if (jsonText === null) jsonText = text; // maybe the file is raw JSON
+  if (jsonText === null) jsonText = text; // maybe the file is raw JSON (e.g. content.json)
   var obj;
   try { obj = JSON.parse(jsonText); } catch (err) { return null; }
   if (!obj || !Array.isArray(obj.items)) return null;
-  obj.items = obj.items.map(function (it) {
-    it = it || {};
-    return {
-      id: it.id || uid(),
-      title: typeof it.title === 'string' ? it.title : '',
-      link: typeof it.link === 'string' ? it.link : '',
-      description: typeof it.description === 'string' ? it.description : ''
-    };
-  });
-  if (typeof obj.title !== 'string') obj.title = config.title;
-  if (typeof obj.subtitle !== 'string') obj.subtitle = config.subtitle;
-  if (typeof obj.passwordHash !== 'string') obj.passwordHash = config.passwordHash;
-  return obj;
+  return normalizeConfig(obj, config); // fill any gaps from the current content
 }
 
 function importFromFile() {
@@ -848,13 +933,13 @@ function importFromFile() {
         alert('Could not find checklist content in "' + file.name + '".\n\nPick a checklist HTML file you saved/downloaded from this tool (or a JSON export from it).');
         return;
       }
-      if (!confirm('Load ' + imported.items.length + ' item(s) from "' + file.name + '"?\n\nThis replaces the content currently shown here (titles, links, descriptions' + (imported.passwordHash !== config.passwordHash ? ', and the admin password' : '') + '). Nothing is final until you click "Download updated checklist".')) return;
+      if (!confirm('Load ' + imported.items.length + ' item(s) from "' + file.name + '"?\n\nThis replaces the content currently shown here (titles, links, descriptions' + (imported.passwordHash !== config.passwordHash ? ', and the admin password' : '') + '). Nothing is published until you save and upload the content file.')) return;
       config = imported;
       openIds = {};
       isDirty = true;
       try { localStorage.setItem(DRAFT_KEY, JSON.stringify(config)); } catch (e) {}
       render();
-      toast('Imported ' + config.items.length + ' items. Review them, then click "Download updated checklist" to save the merged file.');
+      toast('Imported ' + config.items.length + ' items. Review them, then click "Download content file" to save.');
     };
     reader.onerror = function () { alert('Could not read that file. Please try again.'); };
     reader.readAsText(file);
@@ -862,7 +947,34 @@ function importFromFile() {
   input.click();
 }
 
-render();
+/* ---------------- Boot ---------------- */
+function applyLoaded(obj, source) {
+  loadedConfig = normalizeConfig(obj);
+  config = clone(loadedConfig);
+  contentSource = source;
+}
+
+/* When hosted (http/https), load content.json fresh on every visit so updates
+   are never stuck behind a browser/Home-Screen cache. When opened directly
+   from disk (file://), fetch can't read sibling files, so use the embedded
+   fallback content baked into this page. */
+function boot() {
+  if (location.protocol === 'file:') {
+    applyLoaded(EMBEDDED_CONFIG, 'embedded');
+    render();
+    return;
+  }
+  app.innerHTML = '<div class="loading">Loading checklist…</div>';
+  fetch('content.json?ts=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+    .then(function (data) {
+      if (!data || !Array.isArray(data.items)) throw new Error('content.json has no items');
+      applyLoaded(data, 'json');
+    })
+    .catch(function () { applyLoaded(EMBEDDED_CONFIG, 'json-missing'); })
+    .then(function () { render(); });
+}
+boot();
 </script>
 </body>
 </html>

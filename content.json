@@ -1,0 +1,307 @@
+{
+  "title": "New Hire Onboarding Checklist",
+  "subtitle": "Welcome to the team! Work through each item below at your own pace. Click an item to see instructions and a link to the resource, then mark it complete. Your progress is saved on this device.",
+  "passwordHash": "08a3d2dc7693d7166eef51ec0194ae6009c7636af128d4a208a14d1b5293c3cd",
+  "items": [
+    {
+      "id": "i01",
+      "title": "Welcome & first-day schedule",
+      "link": "https://intranet.example.com/welcome",
+      "description": "Review your first-day agenda, where to go, who to ask for, and what to bring on day one."
+    },
+    {
+      "id": "i02",
+      "title": "Sign your employment agreement & NDA",
+      "link": "https://intranet.example.com/hr/agreements",
+      "description": "Electronically sign your offer paperwork, confidentiality agreement, and any outstanding documents in the HR portal."
+    },
+    {
+      "id": "i03",
+      "title": "Complete employment verification (I-9)",
+      "link": "https://intranet.example.com/hr/i9",
+      "description": "Provide your identity and work-authorization documents within your first three days of employment."
+    },
+    {
+      "id": "i04",
+      "title": "Complete tax withholding forms (W-4)",
+      "link": "https://intranet.example.com/hr/tax-forms",
+      "description": "Fill out your federal and state tax withholding elections so payroll can be processed correctly."
+    },
+    {
+      "id": "i05",
+      "title": "Set up direct deposit",
+      "link": "https://intranet.example.com/hr/direct-deposit",
+      "description": "Add your bank account details in the payroll system so your paychecks arrive automatically."
+    },
+    {
+      "id": "i06",
+      "title": "Add an emergency contact",
+      "link": "https://intranet.example.com/hr/emergency-contact",
+      "description": "Enter at least one emergency contact in your employee profile so we can reach someone if needed."
+    },
+    {
+      "id": "i07",
+      "title": "Get your employee ID & badge photo",
+      "link": "https://intranet.example.com/facilities/badge",
+      "description": "Stop by the front desk (or upload a photo) to get your security badge and employee ID issued."
+    },
+    {
+      "id": "i08",
+      "title": "Order business cards",
+      "link": "https://intranet.example.com/facilities/business-cards",
+      "description": "Submit your name, title, and contact details to order your company business cards."
+    },
+    {
+      "id": "i09",
+      "title": "Review the employee handbook",
+      "link": "https://intranet.example.com/hr/handbook",
+      "description": "Read the employee handbook covering policies, expectations, and your rights and responsibilities, then acknowledge it."
+    },
+    {
+      "id": "i10",
+      "title": "Office tour & facilities map",
+      "link": "https://intranet.example.com/facilities/map",
+      "description": "Find meeting rooms, restrooms, kitchens, printers, quiet areas, and emergency exits at your office location."
+    },
+    {
+      "id": "i11",
+      "title": "Pick up your laptop & equipment",
+      "link": "https://intranet.example.com/it/equipment",
+      "description": "Collect your laptop, monitor, and peripherals from IT, and sign the equipment agreement."
+    },
+    {
+      "id": "i12",
+      "title": "Set up your company email",
+      "link": "https://intranet.example.com/it/email",
+      "description": "Log in to your company email account, set your display name, and add your email signature using the company template."
+    },
+    {
+      "id": "i13",
+      "title": "Enroll in multi-factor authentication",
+      "link": "https://intranet.example.com/it/mfa",
+      "description": "Set up MFA on your phone or hardware key. This is required before you can access most company systems."
+    },
+    {
+      "id": "i14",
+      "title": "Install required software",
+      "link": "https://intranet.example.com/it/software",
+      "description": "Install the standard software bundle for your role from the self-service portal."
+    },
+    {
+      "id": "i15",
+      "title": "Join team chat channels",
+      "link": "https://intranet.example.com/it/chat",
+      "description": "Sign in to the company chat tool and join your team, department, and company-wide announcement channels."
+    },
+    {
+      "id": "i16",
+      "title": "Set up VPN access",
+      "link": "https://intranet.example.com/it/vpn",
+      "description": "Install and configure the VPN client so you can securely access internal systems when working remotely."
+    },
+    {
+      "id": "i17",
+      "title": "Set up the password manager",
+      "link": "https://intranet.example.com/it/password-manager",
+      "description": "Activate your company password manager account and move any shared credentials into it. Never store passwords in documents or notes."
+    },
+    {
+      "id": "i18",
+      "title": "IT FAQ & helpdesk",
+      "link": "https://intranet.example.com/it/faq",
+      "description": "Bookmark the IT FAQ and learn how to open a helpdesk ticket when you run into technical issues."
+    },
+    {
+      "id": "i19",
+      "title": "Complete security awareness training",
+      "link": "https://intranet.example.com/training/security",
+      "description": "Finish the mandatory security training covering phishing, data handling, and device security. Due within your first two weeks."
+    },
+    {
+      "id": "i20",
+      "title": "Set up your phone / softphone",
+      "link": "https://intranet.example.com/it/phone",
+      "description": "Configure your desk phone or softphone app, record your voicemail greeting, and add your number to your profile."
+    },
+    {
+      "id": "i21",
+      "title": "Company benefits overview",
+      "link": "https://intranet.example.com/benefits/overview",
+      "description": "Get a full overview of your benefits package: health coverage, retirement, time off, perks, and enrollment deadlines."
+    },
+    {
+      "id": "i22",
+      "title": "Enroll in health insurance",
+      "link": "https://intranet.example.com/benefits/health",
+      "description": "Compare medical plans and enroll yourself (and any dependents) before your enrollment window closes."
+    },
+    {
+      "id": "i23",
+      "title": "Enroll in dental & vision",
+      "link": "https://intranet.example.com/benefits/dental-vision",
+      "description": "Review and elect dental and vision coverage options during your new-hire enrollment window."
+    },
+    {
+      "id": "i24",
+      "title": "Set up retirement / 401(k) contributions",
+      "link": "https://intranet.example.com/benefits/retirement",
+      "description": "Choose your contribution percentage and investments, and review the company match policy."
+    },
+    {
+      "id": "i25",
+      "title": "Review life & disability insurance",
+      "link": "https://intranet.example.com/benefits/life-disability",
+      "description": "Review the company-paid coverage and decide whether to elect additional voluntary coverage."
+    },
+    {
+      "id": "i26",
+      "title": "PTO policy & holiday calendar",
+      "link": "https://intranet.example.com/hr/pto",
+      "description": "Learn how vacation and sick time accrue, how to request time off, and which company holidays are observed this year."
+    },
+    {
+      "id": "i27",
+      "title": "Confirm your working hours & location",
+      "link": "https://intranet.example.com/hr/work-schedule",
+      "description": "Record your standard working hours, time zone, and remote/hybrid schedule in your employee profile."
+    },
+    {
+      "id": "i28",
+      "title": "Commuter benefits & parking",
+      "link": "https://intranet.example.com/benefits/commuter",
+      "description": "Sign up for pre-tax transit benefits or register your vehicle for a parking pass."
+    },
+    {
+      "id": "i29",
+      "title": "Wellness program & gym discounts",
+      "link": "https://intranet.example.com/benefits/wellness",
+      "description": "Explore wellness reimbursements, gym discounts, and mental-health resources available to all employees."
+    },
+    {
+      "id": "i30",
+      "title": "Employee assistance program (EAP)",
+      "link": "https://intranet.example.com/benefits/eap",
+      "description": "Learn about the free, confidential counseling and support services available to you and your family."
+    },
+    {
+      "id": "i31",
+      "title": "Meet your manager (first 1:1)",
+      "link": "https://intranet.example.com/onboarding/manager-1on1",
+      "description": "Schedule your first one-on-one with your manager to align on expectations, priorities, and how you'll work together."
+    },
+    {
+      "id": "i32",
+      "title": "Meet your onboarding buddy",
+      "link": "https://intranet.example.com/onboarding/buddy",
+      "description": "Connect with your assigned onboarding buddy — your go-to person for everyday questions during your first months."
+    },
+    {
+      "id": "i33",
+      "title": "Team introductions",
+      "link": "https://intranet.example.com/onboarding/team",
+      "description": "Meet your immediate teammates and learn what each person works on and how your role fits in."
+    },
+    {
+      "id": "i34",
+      "title": "Org chart & who's who",
+      "link": "https://intranet.example.com/company/org-chart",
+      "description": "Browse the org chart to understand company structure, departments, and key leaders."
+    },
+    {
+      "id": "i35",
+      "title": "Company mission, vision & values",
+      "link": "https://intranet.example.com/company/mission",
+      "description": "Read about why the company exists, where it's headed, and the values that guide how we work."
+    },
+    {
+      "id": "i36",
+      "title": "Communication norms & meeting etiquette",
+      "link": "https://intranet.example.com/company/communication",
+      "description": "Learn which channels we use for what, response-time expectations, and how we run effective meetings."
+    },
+    {
+      "id": "i37",
+      "title": "Join an employee resource group",
+      "link": "https://intranet.example.com/company/ergs",
+      "description": "Browse our employee resource groups and communities, and join any that interest you."
+    },
+    {
+      "id": "i38",
+      "title": "Company events & social calendar",
+      "link": "https://intranet.example.com/company/events",
+      "description": "Check out upcoming all-hands meetings, team events, and social activities you can join."
+    },
+    {
+      "id": "i39",
+      "title": "Set your 30/60/90-day goals",
+      "link": "https://intranet.example.com/onboarding/goals",
+      "description": "Work with your manager to define what success looks like in your first 30, 60, and 90 days."
+    },
+    {
+      "id": "i40",
+      "title": "Schedule intro coffee chats",
+      "link": "https://intranet.example.com/onboarding/coffee-chats",
+      "description": "Book short intro chats with the cross-functional partners you'll work with most often."
+    },
+    {
+      "id": "i41",
+      "title": "Time tracking & timesheets",
+      "link": "https://intranet.example.com/tools/time-tracking",
+      "description": "Learn how and when to submit your timesheet, if your role requires time tracking."
+    },
+    {
+      "id": "i42",
+      "title": "Expense reporting tool",
+      "link": "https://intranet.example.com/tools/expenses",
+      "description": "Set up your expense account, review the expense policy, and learn how to submit receipts for reimbursement."
+    },
+    {
+      "id": "i43",
+      "title": "Project management tool overview",
+      "link": "https://intranet.example.com/tools/projects",
+      "description": "Get access to the project tracking tool your team uses and learn how work is planned and assigned."
+    },
+    {
+      "id": "i44",
+      "title": "Internal wiki & knowledge base",
+      "link": "https://intranet.example.com/tools/wiki",
+      "description": "Bookmark the internal wiki — the first place to look for documentation, how-tos, and team pages."
+    },
+    {
+      "id": "i45",
+      "title": "Complete required compliance training",
+      "link": "https://intranet.example.com/training/compliance",
+      "description": "Finish the mandatory compliance courses (code of conduct, anti-harassment, data privacy) by their due dates."
+    },
+    {
+      "id": "i46",
+      "title": "Review your role-specific training plan",
+      "link": "https://intranet.example.com/training/role",
+      "description": "Go through the training plan for your specific role and schedule any required sessions."
+    },
+    {
+      "id": "i47",
+      "title": "Brand & style guidelines",
+      "link": "https://intranet.example.com/company/brand",
+      "description": "Review logo usage, templates, and writing style guidelines for anything you create or share externally."
+    },
+    {
+      "id": "i48",
+      "title": "Travel booking & policy",
+      "link": "https://intranet.example.com/tools/travel",
+      "description": "Learn how to book business travel through the company travel tool and what the travel policy covers."
+    },
+    {
+      "id": "i49",
+      "title": "Payroll calendar & paystubs",
+      "link": "https://intranet.example.com/hr/payroll",
+      "description": "Find the payroll calendar, learn when you'll be paid, and see how to access your paystubs online."
+    },
+    {
+      "id": "i50",
+      "title": "Complete the 30-day onboarding survey",
+      "link": "https://intranet.example.com/onboarding/survey",
+      "description": "After your first month, tell us how onboarding went so we can improve it for future new hires."
+    }
+  ]
+}

@@ -1,10 +1,21 @@
 # New Hire Onboarding Checklist
 
-A single-file, no-server onboarding checklist for new employees. Everything —
-the progress bar, the 50 expandable checklist items, employee progress
-tracking, and the password-protected admin editor — lives in one
-self-contained `index.html` you can share via email, Google Drive, SharePoint,
-or a shared network folder.
+A no-server onboarding checklist for new employees: a progress bar, expandable
+checklist items, per-device progress tracking, and a password-protected admin
+editor — all in plain HTML/CSS/JS.
+
+Two files work together:
+
+- **`index.html`** — the app (the code). It rarely needs to change.
+- **`content.json`** — your content (titles, links, descriptions, the admin
+  password hash). This is the only file you edit/replace to change what
+  employees see.
+
+When hosted on a website, `index.html` loads `content.json` **fresh on every
+visit**, so updates can't get stuck behind a browser or Home-Screen cache, and
+updating the code never wipes your content. If `index.html` is opened directly
+from disk (no website), it falls back to a built-in copy of the content baked
+into the page.
 
 ## For employees
 
@@ -35,25 +46,34 @@ Click **Admin** in the page footer and enter the password.
 
 - The checklist **title** and **welcome message**
 - Each item's **title**, **description**, and **resource link or access
-  instructions**. Whatever you type in that box is shown to employees: a full
-  URL (`https://...` or `www....`) becomes a clickable link displaying that
-  address; anything else is shown as plain text (e.g. "Ask your manager for
-  access"). Leave it blank to show nothing.
+  instructions**. Whatever you type in that box is shown to employees: a web
+  address — **with or without `https://`** (e.g. `intranet.acme.com/benefits`,
+  `www.acme.com`, `mailto:hr@acme.com`) — becomes a clickable link; anything
+  with spaces (e.g. "Ask your manager for access") is shown as plain text.
+  A live preview under the box tells you which it will be. Leave it blank to
+  show nothing.
 - **Add** items (the "+ Add checklist item" button), **delete** items (✕),
   and **reorder** them (▲ ▼) — so the list can grow past 50 or shrink as
   your onboarding process evolves
 
 ### Publishing your changes (important!)
 
-Because there is no server, edits made in the browser only exist in your
-session until you bake them into a file:
+Edits made in admin mode live only in your browser until you save them to the
+content file and upload it. The workflow is one small file:
 
 1. Make your edits in admin mode.
-2. Click **⬇ Download updated checklist**. This downloads a fresh
-   `new-hire-onboarding-checklist.html` with your content (and password)
-   permanently embedded.
-3. Distribute **that downloaded file** to employees — it replaces the old
-   one.
+2. Click **⬇ Download content file**. This downloads `content.json` with your
+   content and password.
+3. Upload that `content.json` to your site, replacing the old one (see
+   *Hosting* below). **You do not need to touch `index.html`.**
+
+Within moments, everyone — including phones with the page saved to their Home
+Screen — sees the new content on their next visit, because the page always
+loads `content.json` fresh.
+
+> There is also a **Download standalone HTML** button. Use it only if you want
+> a single self-contained file to open directly/offline (it bakes the content
+> into the page). For a hosted site, use the content file.
 
 If you close the page with unsaved edits, they're kept as a draft in your
 browser and you'll be offered the chance to restore them the next time you
@@ -66,12 +86,11 @@ So if you get a newer version of this tool (with new features) but it shows
 the blank sample items, you don't have to re-type anything:
 
 1. Open the new file and log in to admin mode.
-2. Click **⬆ Import from saved file** and choose the checklist file you
-   saved earlier (the `.html` you downloaded, or a JSON export of it).
+2. Click **⬆ Import from saved file** and choose a checklist file you saved
+   earlier — a `content.json` or a standalone `.html` you downloaded.
 3. All your content — title, welcome message, every item's title/link/
    description, and your admin password — loads into the new version.
-4. Click **⬇ Download updated checklist** to save the merged file, and
-   distribute that.
+4. Click **⬇ Download content file** and upload the resulting `content.json`.
 
 This is the supported way to carry your content forward across versions.
 
@@ -98,23 +117,38 @@ One-time setup (about 2 minutes, done in the GitHub web UI):
 5. (Optional) Set `main` as the default branch: *Settings → General →
    Default branch*.
 
+Both `index.html` **and** `content.json` must be in the repo (they already
+are). The page reads its content from `content.json` next to it.
+
 If you later buy a real domain (e.g. `azlungonboarding.com`), enter it in
 the **Custom domain** box on that same *Settings → Pages* screen and follow
 GitHub's DNS prompts — everything else stays the same.
 
-### Updating the live site
+### Saving to a phone Home Screen
 
-Once hosted, "distribute the new file" becomes "replace the file in the repo":
+Employees can open the link in Safari/Chrome on their phone and choose **Add to
+Home Screen** to get an app-like icon. Because the page reloads `content.json`
+fresh each time, a Home-Screen copy still shows your latest content — it won't
+get frozen on an old version.
 
-1. In admin mode, click **⬇ Download updated checklist**.
-2. Rename the download to `index.html`.
-3. On GitHub (`main` branch): *Add file → Upload files* → drop in
-   `index.html` → **Commit changes**. The live site updates within a couple
-   of minutes; employees just refresh the page and their progress is kept.
+### Updating the live site (the easy part)
+
+To change content, you upload **only `content.json`** — never `index.html`:
+
+1. In admin mode, click **⬇ Download content file** (`content.json`).
+2. On GitHub (`main` branch): open the existing `content.json` → the **pencil
+   (Edit)** icon, or use *Add file → Upload files* → drop in your new
+   `content.json` → **Commit changes**.
+3. The live site shows the new content on the next visit (usually seconds).
+   Employees' saved progress is kept.
+
+Because content lives in `content.json`, future updates to `index.html` (new
+features, fixes) can never overwrite your content.
 
 > Note: a GitHub Pages site is publicly reachable by anyone who has the
-> URL, even though it's unlisted. Keep that in mind for what you put in
-> descriptions and links.
+> URL, even though it's unlisted. The admin password hash and all content in
+> `content.json` are readable by anyone who looks. Keep that in mind for what
+> you put in descriptions and links.
 
 ## Security note
 
@@ -127,7 +161,9 @@ descriptions or links.
 
 ## Development
 
-No build step, no dependencies. The file is plain HTML/CSS/JS; checklist
-content lives in the JSON block tagged `id="checklist-config"` near the top
-of `index.html`, which you can also edit directly in a text editor if you
-prefer that over admin mode.
+No build step, no dependencies. `index.html` is plain HTML/CSS/JS. Content
+lives in `content.json` (loaded at runtime when hosted); the `<script
+id="checklist-config">` block inside `index.html` is only a fallback copy used
+when the page is opened directly from disk. You can edit `content.json` by hand
+in any text editor instead of using admin mode if you prefer — keep it valid
+JSON with a top-level `items` array.
